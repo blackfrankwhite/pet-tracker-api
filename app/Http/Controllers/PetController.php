@@ -37,7 +37,7 @@ class PetController extends Controller
         $pet->birth_year = $request->birth_year;
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('private/pets/images');
+            $path = $request->file('image')->store('pets/images', 'public');
             $pet->image = $path;
         }
 
@@ -90,12 +90,11 @@ class PetController extends Controller
         $pet->update($request->only(['name', 'breed', 'birth_year']));
 
         if ($request->hasFile('image')) {
-            // Delete old image if exists
             if ($pet->image) {
                 Storage::delete($pet->image);
             }
 
-            $path = $request->file('image')->store('private/pets/images');
+            $path = $request->file('image')->store('pets/images', 'public');
             $pet->image = Storage::url($path);
         }
 
