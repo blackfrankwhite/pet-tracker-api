@@ -17,6 +17,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [PetController::class, 'show']);
         Route::put('/{id}', [PetController::class, 'update']);
         Route::delete('/{id}', [PetController::class, 'destroy']);
+        Route::get('/{id}/qrcode', [PetController::class, 'getQrCode']);
     });
 });
 

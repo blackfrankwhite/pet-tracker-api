@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('pet_id')->constrained()->onDelete('cascade');
             $table->string('latitude');
             $table->string('longitude');
+            $table->text('message')->nullable();
             $table->timestamps();
         });
     }

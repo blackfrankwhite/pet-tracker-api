@@ -1,0 +1,67 @@
+name: Laravel CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+
+    - name: Install Composer Dependencies
+      run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+    - name: Run Migrations
+      run: php artisan migrate --force
+
+    - name: Clear Cache
+      run: php artisan cache:clear
+
+    - name: Deploy to Server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        script: |
+          cd /var/www/pet-tracker-api
+          git pull origin main
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+          php artisan migrate --force
+          php artisan cache:clear
+
+    - name: Notify Success
+      if: success()
+      uses: dawidd6/action-send-mail@v2
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.EMAIL_ON_SUCCESS }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: Deployment succeeded
+        to: ${{ secrets.EMAIL_ON_SUCCESS }}
+        from: ${{ secrets.EMAIL_ON_SUCCESS }}
+        body: Deployment of the main branch was successful.
+
+    - name: Notify Failure
+      if: failure()
+      uses: dawidd6/action-send-mail@v2
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.EMAIL_ON_FAILURE }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: Deployment failed
+        to: ${{ secrets.EMAIL_ON_FAILURE }}
+        from: ${{ secrets.EMAIL_ON_FAILURE }}
+        body: Deployment of the main branch failed.

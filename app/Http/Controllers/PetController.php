@@ -118,4 +118,24 @@ class PetController extends Controller
 
         return response()->json(['message' => 'Pet deleted successfully']);
     }
+
+    public function getQrCode($id)
+    {
+        $pet = Pet::where('id', $id)->where('user_id', Auth::id())->first();
+
+        if (!$pet || !$pet->qr_code) {
+            return response()->json(['message' => 'Pet or QR code not found'], 404);
+        }
+
+        $path = storage_path('app/' . $pet->qr_code);
+
+        if (!file_exists($path)) {
+            return response()->json(['message' => 'QR code file not found'], 404);
+        }
+
+        $qrCode = file_get_contents($path);
+        $type = mime_content_type($path);
+
+        return response()->make($qrCode, 200, ['Content-Type' => $type]);
+    }
 }
