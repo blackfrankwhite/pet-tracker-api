@@ -27,6 +27,6 @@ jobs:
         script: |
           cd /var/www/pet-tracker-api
           git pull https://x-access-token:${{ secrets.TOKEN_GITHUB }}@github.com/blackfrankwhite/pet-tracker-api.git
-          composer install --no-interaction --prefer-dist --optimize-autoloader
+          composer install --no-interaction --optimize-autoloader
           php artisan migrate --force
           php artisan cache:clear
