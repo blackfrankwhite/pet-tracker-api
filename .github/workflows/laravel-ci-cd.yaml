@@ -18,18 +18,14 @@ jobs:
       with:
         php-version: '8.1'
 
-    - name: Install Composer Dependencies
-      run: composer install --no-interaction --prefer-dist --optimize-autoloader
-      
-    - name: Print environment variables
-      run: |
-        printenv
+    # - name: Install Composer Dependencies
+    #   run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-    - name: Run Migrations
-      run: php artisan migrate --force
+    # - name: Clear Cache
+    #   run: php artisan cache:clear
 
-    - name: Clear Cache
-      run: php artisan cache:clear
+    # - name: Run Migrations
+    #   run: php artisan migrate --force
 
     - name: Deploy to Server
       uses: appleboy/ssh-action@master
