@@ -17,16 +17,6 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.1'
-
-    - name: Install Composer Dependencies
-      run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-    - name: Run Migrations
-      run: php artisan migrate --force
-
-    - name: Clear Cache
-      run: php artisan cache:clear
-
     - name: Test SSH Connection
       id: test-ssh
       uses: appleboy/ssh-action@master
@@ -36,6 +26,15 @@ jobs:
         password: ${{ secrets.SSH_PASSWORD }}
         script: |
           echo "SSH connection to server $(hostname) was successful!"
+
+    - name: Install Composer Dependencies
+      run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+    - name: Run Migrations
+      run: php artisan migrate --force
+
+    - name: Clear Cache
+      run: php artisan cache:clear 
 
     - name: Check SSH Connection Output
       run: echo "${{ steps.test-ssh.outputs.success }}"
