@@ -14,11 +14,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('pet')->group(function () {
         Route::get('/', [PetController::class, 'index']);
         Route::post('/', [PetController::class, 'store']);
+        Route::get('/qr-code/{id}',  [PetController::class,'getQrCode'])->name('pets.qrcode')->middleware('auth');
+        Route::get('/{id}/qrcode', [PetController::class, 'getQrCode']);
+        Route::get('/{id}/locations', [PetController::class, 'getLocations']);
         Route::get('/{id}', [PetController::class, 'show']);
         Route::put('/{id}', [PetController::class, 'update']);
         Route::delete('/{id}', [PetController::class, 'destroy']);
-        Route::get('/{id}/qrcode', [PetController::class, 'getQrCode']);
     });
 });
 
-Route::post('/pets/{petId}/locations', [LocationController::class, 'store']);
+Route::post('/pet-location/{token}', [LocationController::class, 'store']);

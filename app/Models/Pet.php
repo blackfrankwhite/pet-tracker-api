@@ -16,6 +16,7 @@ class Pet extends Model
      */
     protected $fillable = [
         'user_id',
+        'token',
         'name',
         'breed',
         'birth_year',
@@ -31,13 +32,13 @@ class Pet extends Model
     protected $visible = [
         'id',
         'user_id',
+        'qr_code_url',
         'name',
         'breed',
         'birth_year',
         'qr_code',
         'image',
-        'created_at',
-        'updated_at',
+        'token',
     ];
 
     /**

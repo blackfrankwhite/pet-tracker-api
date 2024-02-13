@@ -3,23 +3,35 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Location;
+use App\Models\Pet;
 
 class LocationController extends Controller
 {
-    public function store(Request $request, $petId)
+    public function store(Request $request, $token)
     {
-        $request->validate([
+        $validator = \Validator::make($request->all(), [
             'latitude' => 'required|string',
             'longitude' => 'required|string',
         ]);
-
+    
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+    
+        $pet = Pet::where('token', $request->token)->first();
+        if (!$pet) {
+            return response()->json(['message' => 'Pet not found'], 404);
+        }
+    
         $location = new Location([
-            'pet_id' => $petId,
+            'pet_id' => $pet->id,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
         ]);
         $location->save();
-
+    
         return response()->json(['message' => 'Location saved successfully', 'location' => $location], 201);
     }
+    
 }

@@ -13,7 +13,13 @@ class PetController extends Controller
 {
     public function index()
     {
-        $pets = Pet::where('user_id', Auth::id())->get();
+        $pets = Pet::where('user_id', Auth::id())->get()->map(function ($pet) {
+            // Generate a URL to the controller action that serves the QR code
+            if ($pet->qr_code) {
+                $pet->qr_code_url = route('pets.qrcode', ['id' => $pet->id]);
+            }
+            return $pet;
+        });
         return response()->json($pets);
     }
 
@@ -25,37 +31,38 @@ class PetController extends Controller
             'birth_year' => 'required|digits:4|integer|min:1900|max:' . date('Y'),
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
-
+    
         $pet = new Pet();
         $pet->user_id = Auth::id();
+        $pet->token = \Str::random(10);
         $pet->name = $request->name;
         $pet->breed = $request->breed;
         $pet->birth_year = $request->birth_year;
-
+    
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('pets/images', 'public');
+            $imageFileName = \Str::random(40) . '.' . $request->file('image')->getClientOriginalExtension();
+            $path = $request->file('image')->storeAs('pets/images', $imageFileName);
             $pet->image = $path;
         }
-
+    
         $pet->save();
-
-        $qrCodeDirectory = 'private/pets/qrcodes';
-        $qrCodeFileName = $pet->id . '.svg';
-        $qrCodePath = $qrCodeDirectory . '/' . $qrCodeFileName;
-
-        $qrCodeContent = QrCode::size(300)->generate(url('/api/pets/' . $pet->id));
-
+        $frontEndUrl = env('FRONT_END_URL', 'http://localhost:3000');
+        $qrCodeUrl = "{$frontEndUrl}/pet-location/{$pet->token}";
+        $qrCodeContent = QrCode::size(300)->generate($qrCodeUrl);
+            
+        $qrCodeFileName = \Str::random(40) . '.svg';
+        $qrCodePath = 'pets/qrcodes/' . $qrCodeFileName;
         Storage::disk('local')->put($qrCodePath, $qrCodeContent);
-
+    
         $pet->qr_code = $qrCodePath;
         $pet->save();
-
+    
         return response()->json(['message' => 'Pet created successfully', 'pet' => $pet], 201);
-    }
+    } 
 
     public function show($id)
     {
@@ -122,20 +129,44 @@ class PetController extends Controller
     public function getQrCode($id)
     {
         $pet = Pet::where('id', $id)->where('user_id', Auth::id())->first();
-
+    
         if (!$pet || !$pet->qr_code) {
             return response()->json(['message' => 'Pet or QR code not found'], 404);
         }
-
+    
         $path = storage_path('app/' . $pet->qr_code);
-
+    
         if (!file_exists($path)) {
             return response()->json(['message' => 'QR code file not found'], 404);
         }
+    
+        return response()->file($path);
+    }
 
-        $qrCode = file_get_contents($path);
-        $type = mime_content_type($path);
+    public function getLocations(Request $request, $id)
+    {
+        $pet = Pet::where('id', $id)->where('user_id', Auth::id())->first();
 
-        return response()->make($qrCode, 200, ['Content-Type' => $type]);
+        if (!$pet) {
+            return response()->json(['message' => 'Pet not found'], 404);
+        }
+
+        $query = $pet->locations()->orderBy('created_at', 'desc');
+
+        if ($request->has('start_date')) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+
+        if ($request->has('end_date')) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        $locations = $query->get();
+
+        if ($locations->isEmpty()) {
+            return [];
+        }
+
+        return response()->json($locations);
     }
 }
