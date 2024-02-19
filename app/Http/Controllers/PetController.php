@@ -15,7 +15,6 @@ class PetController extends Controller
     public function index()
     {
         $pets = Pet::where('user_id', Auth::id())->get()->map(function ($pet) {
-            // Generate a URL to the controller action that serves the QR code
             if ($pet->qr_code) {
                 $pet->qr_code_url = route('pets.qrcode', ['id' => $pet->id]);
             }
@@ -183,7 +182,8 @@ class PetController extends Controller
         return [
             'mobile' => $user->mobile,
             'comment' => $user->comment,
-            'email' => $user->email
+            'email' => $user->email,
+            'name' => $user->name
         ];
     }
 }
