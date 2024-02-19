@@ -13,7 +13,6 @@ class UserController extends Controller
         $user = $request->user();
 
         return [
-            'email' => $user['email'],
             'mobile' => $user['mobile'],
             'comment' => $user['comment'],
             'name' => $user['name'],
@@ -24,9 +23,8 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
             'mobile' => 'required|string|min:8',
-            'comment' => 'sometimes|string',
+            'comment' => 'sometimes|string|nullable',
         ]);
 
         if ($validator->fails()) {
@@ -36,7 +34,6 @@ class UserController extends Controller
         $user = $request->user();
 
         return User::where('id', $user['id'])->update([
-            'email' => $request->email,
             'name' => $request->name,
             'mobile' => $request->mobile,
             'comment' => $request->comment,
