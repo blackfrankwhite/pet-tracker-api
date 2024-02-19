@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\UserController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -21,6 +22,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}', [PetController::class, 'update']);
         Route::delete('/{id}', [PetController::class, 'destroy']);
     });
+
+    Route::prefix('user')->group(function () {
+        Route::get('/', [UserController::class, 'get']);
+        Route::put('/', [UserController::class, 'update']);
+    });
 });
 
 Route::post('/pet-location/{token}', [LocationController::class, 'store']);
+Route::get('/pet-details/{token}', [PetController::class, 'getPetDetails']);
+

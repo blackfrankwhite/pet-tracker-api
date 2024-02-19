@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pet;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -168,5 +169,21 @@ class PetController extends Controller
         }
 
         return response()->json($locations);
+    }
+
+    public function getPetDetails(Request $request, $token)
+    {
+        $pet = Pet::where('token', $request->token)->first();
+        if (!$pet) {
+            return response()->json(['message' => 'Pet not found'], 404);
+        }
+
+        $user = User::where('id', $pet->user_id)->first();
+
+        return [
+            'mobile' => $user->mobile,
+            'comment' => $user->comment,
+            'email' => $user->email
+        ];
     }
 }
