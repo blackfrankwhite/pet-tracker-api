@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Location;
 use App\Models\Pet;
 use App\Services\SMSService;
+use App\Models\User;
 
 class LocationController extends Controller
 {
