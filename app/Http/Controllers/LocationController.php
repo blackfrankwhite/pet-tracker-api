@@ -5,9 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Location;
 use App\Models\Pet;
+use App\Services\SMSService;
 
 class LocationController extends Controller
 {
+    public function __construct(SMSService $smsService)
+    {
+        $this->smsService = $smsService;
+    }
+
     public function store(Request $request, $token)
     {
         $validator = \Validator::make($request->all(), [
@@ -20,6 +26,9 @@ class LocationController extends Controller
         }
     
         $pet = Pet::where('token', $request->token)->first();
+        $user = User::where('id', $pet->user_id)->first();
+        $sent = $this->smsService->sendSMS($user->mobile, " new location entry : {$request->latitude},{$request->longitude}");
+
         if (!$pet) {
             return response()->json(['message' => 'Pet not found'], 404);
         }
