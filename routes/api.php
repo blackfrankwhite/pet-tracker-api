@@ -8,7 +8,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\UserController;
 
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/send-verification-code', [AuthController::class, 'sendVerificationCode']);
+Route::post('/complete-registration', [AuthController::class, 'completeRegistration']);
+
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
