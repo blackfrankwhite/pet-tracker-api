@@ -30,8 +30,6 @@ class LocationController extends Controller
         $user = User::where('id', $pet->user_id)->first();
         $sent = $this->smsService->sendSMS($user->mobile, " new location entry : {$request->latitude},{$request->longitude}");
 
-        return $sent;
-
         if (!$pet) {
             return response()->json(['message' => 'Pet not found'], 404);
         }
